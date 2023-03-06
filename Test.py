@@ -1,7 +1,12 @@
 import pandas
-import numpy as np
+from pathlib import Path
+
+filepath = Path('.\out.csv')  
+filepath.parent.mkdir(parents=True, exist_ok=True)
+
 df = pandas.read_csv('Atomic.csv')
 attack = pandas.read_csv('Attack.csv')
+out_dict = {}
 out_df = pandas.DataFrame()
 sep = '.'
 
@@ -23,8 +28,8 @@ desired_confidence = float(desired_confidence)
 
 for i in range(attack.shape[0]):
     df_string = "T" + str(i)
-    out_df[df_string] = [attack["TestId"][i]]
-    out_df[df_string + " confidence"] = [1.0]
+    out_dict[df_string] = [attack["TestId"][i]]
+    out_dict[df_string + " confidence"] = [1.0]
 
     attackdata = df.loc[df['TestId'] == attack["TestId"][i]]
     attack_inputlist = attackdata["Input Type"].values[0]
@@ -80,6 +85,9 @@ for i in range(attack.shape[0]):
         if(df["Tactic"][j].upper() == attackdata["Tactic"].values[0].upper()):
             running_confidence += 1.0
 
+        if(df["Technique"][j].upper() == attackdata["Technique"].values[0].upper()):
+            running_confidence += 1.0
+
         inputlist = df["Input Type"][j]
         if (isinstance(inputlist,str)):
             inputlist = inputlist.split('/')
@@ -106,10 +114,16 @@ for i in range(attack.shape[0]):
         combined_count = len(attack_outputlist) + len(outputlist)
         running_confidence += (1 - len(mismatch) / combined_count)
 
+        running_confidence /= 5.0
+        running_confidence = round(running_confidence,3)
 
-        Output(j, running_confidence)
+        if (running_confidence >= desired_confidence):
+            out_dict[df_string].append(df["TestId"][j])
+            out_dict[df_string + " confidence"].append(running_confidence)
 
+out_df = pandas.DataFrame(dict([ (k,pandas.Series(v)) for k,v in out_dict.items() ]))
+#out_df = pandas.DataFrame.from_dict(out_dict)
             
-print(out_df)
+out_df.to_csv(filepath, index=False)
 
         
