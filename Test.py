@@ -1,7 +1,10 @@
 import pandas
 from pathlib import Path
+#import webbrowser
+#from pathlib import Path
+#path = Path(__file__)
 
-filepath = Path('.\out.csv')  
+filepath = Path('out.csv')  
 filepath.parent.mkdir(parents=True, exist_ok=True)
 
 df = pandas.read_csv('Atomic.csv')
@@ -125,5 +128,12 @@ out_df = pandas.DataFrame(dict([ (k,pandas.Series(v)) for k,v in out_dict.items(
 #out_df = pandas.DataFrame.from_dict(out_dict)
             
 out_df.to_csv(filepath, index=False)
+a = pandas.read_csv("out.csv")
+a.to_html("Table.html")
+#html_file = a.to_html()
+#path = str(path)
+#new = path.replace("Test.py", "Table.html")
+#webbrowser.open(new, 1)
+
 
         
