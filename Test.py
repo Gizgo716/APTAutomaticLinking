@@ -4,7 +4,7 @@ from pathlib import Path
 #from pathlib import Path
 #path = Path(__file__)
 
-filepath = Path('out.csv')  
+filepath = Path('Alternatives.csv')  
 filepath.parent.mkdir(parents=True, exist_ok=True)
 
 df = pandas.read_csv('Atomic.csv')
