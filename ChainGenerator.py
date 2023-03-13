@@ -56,5 +56,6 @@ for combination in combinations:
 outset = outset.sort_values(by="Confidence", ascending=False)
 
 outset.to_csv(filepath, index=False)
+outset.to_html("Chains.html", index=False)
 
 print(outset.head(10))
