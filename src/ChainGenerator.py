@@ -8,7 +8,7 @@ class ChainGen:
 
     def prepare(self):
         config = configparser.ConfigParser()
-        config.read(".\config.cfg")
+        config.read("..\config.cfg")
 
         filepath = Path(config.get("paths","outputpath") + 'Chains.csv')  
         filepath.parent.mkdir(parents=True, exist_ok=True)

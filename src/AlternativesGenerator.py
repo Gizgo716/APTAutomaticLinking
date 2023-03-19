@@ -7,7 +7,7 @@ class AltGen:
     def run():
 
         config = configparser.ConfigParser()
-        config.read(".\config.cfg")
+        config.read("..\config.cfg")
 
         BYPASS_OS = config.getboolean("other","dropOS")
         TID_WEIGHT = float(config.get("weights","testID"))
@@ -19,8 +19,6 @@ class AltGen:
 
         filepath = Path(config.get("paths","outputpath") + 'Alternatives.csv')  
         filepath.parent.mkdir(parents=True, exist_ok=True)
-
-        print(config.get("paths","knowledgebase"))
 
         df = pandas.read_csv(config.get("paths","knowledgebase"))
         attack = pandas.read_csv(config.get("paths","input"))
@@ -131,7 +129,7 @@ class AltGen:
         #out_df = pandas.DataFrame.from_dict(out_dict)
                     
         out_df.to_csv(filepath, index=False)
-        a = pandas.read_csv("out.csv")
+        a = pandas.read_csv(config.get("paths","outputpath") + "Alternatives.csv")
         a.to_html(config.get("paths","outputpath") + "Alternatives.html")
 
 
