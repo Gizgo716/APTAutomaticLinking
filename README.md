@@ -13,7 +13,6 @@ All prerequisites can be installed using pip with the `requirements.txt` file.
 3. Run `run.bat`, or run `Launch.py` using Python from the `src` folder.
 4. Enter a desired confidence level between 0.0 and 1.0.
 5. Optionally, choose whether to attempt combinations to link procedures.
-6. Edit the `config.cfg` file to modify program behavior.
 
 ## Configuration
 Edit the `config.cfg` file to customize how the program runs. The `paths` section specifies the filepaths to the knowledgebase, output, and input files. The `weights` section specifies the weights for each match/mismatch in the alternative generator. The `other` section specifies other settings, such as whether to drop procedures that don't match the original operating system.
