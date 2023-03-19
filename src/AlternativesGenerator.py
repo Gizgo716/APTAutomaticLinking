@@ -9,7 +9,13 @@ class AltGen:
         config = configparser.ConfigParser()
         config.read(".\config.cfg")
 
-        print(config.get("weights","testID"))
+        BYPASS_OS = config.getboolean("other","dropOS")
+        TID_WEIGHT = float(config.get("weights","testID"))
+        TACTIC_WEIGHT = float(config.get("weights","tactic"))
+        TECHNIQUE_WEIGHT = float(config.get("weights", "technique"))
+        INPUT_WEIGHT = float(config.get("weights", "input"))
+        OUTPUT_WEIGHT = float(config.get("weights", "output"))
+        FINAL_WEIGHT = TID_WEIGHT + TACTIC_WEIGHT + TECHNIQUE_WEIGHT + INPUT_WEIGHT + OUTPUT_WEIGHT
 
         filepath = Path(config.get("paths","outputpath") + 'Alternatives.csv')  
         filepath.parent.mkdir(parents=True, exist_ok=True)
@@ -63,29 +69,30 @@ class AltGen:
                     continue
 
                 #Look for incompatble tests
-                system = df["Supported Platform"][j]
-                if (isinstance(system,str)):
-                    system = system.split(',')
-                else:
-                    system = ["NONE"]
-                system = [x.upper() for x in system]
-                mismatch = list(set(attack_system) - set(system))
-                combined_count = len(attack_system) + len(system)
-                if (len(mismatch) > 0): #TODO: Fix in case of attack using Linux, but asks for Linux/MacOS
-                    continue
+                if (not BYPASS_OS):
+                    system = df["Supported Platform"][j]
+                    if (isinstance(system,str)):
+                        system = system.split(',')
+                    else:
+                        system = ["NONE"]
+                    system = [x.upper() for x in system]
+                    mismatch = list(set(attack_system) - set(system))
+                    combined_count = len(attack_system) + len(system)
+                    if (len(mismatch) > 0): #TODO: Fix in case of attack using Linux, but asks for Linux/MacOS
+                        continue
 
                 #look for partial match ID
                 partial = df["TestId"][j].split(sep, 1)[0]
                 if(partial == attackdata["TestId"].values[0].split(sep, 1)[0]):
                     #calculate confidence
-                    running_confidence += 1.0
+                    running_confidence += TID_WEIGHT
 
 
                 if(df["Tactic"][j].upper() == attackdata["Tactic"].values[0].upper()):
-                    running_confidence += 1.0
+                    running_confidence += TACTIC_WEIGHT
 
                 if(df["Technique"][j].upper() == attackdata["Technique"].values[0].upper()):
-                    running_confidence += 1.0
+                    running_confidence += TECHNIQUE_WEIGHT
 
                 inputlist = df["Input Type"][j]
                 if (isinstance(inputlist,str)):
@@ -113,7 +120,7 @@ class AltGen:
                 combined_count = len(attack_outputlist) + len(outputlist)
                 running_confidence += (1 - len(mismatch) / combined_count)
 
-                running_confidence /= 5.0
+                running_confidence /= FINAL_WEIGHT
                 running_confidence = round(running_confidence,3)
 
                 if (running_confidence >= desired_confidence):
@@ -125,11 +132,7 @@ class AltGen:
                     
         out_df.to_csv(filepath, index=False)
         a = pandas.read_csv("out.csv")
-        a.to_html("Table.html")
-        #html_file = a.to_html()
-        #path = str(path)
-        #new = path.replace("Test.py", "Table.html")
-        #webbrowser.open(new, 1)
+        a.to_html(config.get("paths","outputpath") + "Alternatives.html")
 
 
         
