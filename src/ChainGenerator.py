@@ -3,6 +3,7 @@ from pathlib import Path
 import math
 import itertools
 
+
 filepath = Path('chains.csv')  
 filepath.parent.mkdir(parents=True, exist_ok=True)
 

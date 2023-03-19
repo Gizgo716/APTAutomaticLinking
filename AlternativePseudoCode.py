@@ -1,6 +1,3 @@
-import pandas
-import numpy
-
 #Ask user for confidence value
 #Ask user for database file
 #Ask user for attack matrix
