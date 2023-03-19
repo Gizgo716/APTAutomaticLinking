@@ -69,7 +69,7 @@ class AltGen:
                     continue
 
                 #Look for incompatble tests
-                if (not BYPASS_OS):
+                if (BYPASS_OS):
                     system = df["Supported Platform"][j]
                     if (isinstance(system,str)):
                         system = system.split(',')

@@ -2,61 +2,75 @@ import pandas
 from pathlib import Path
 import math
 import itertools
+import configparser
 
+class ChainGen:
 
-filepath = Path('chains.csv')  
-filepath.parent.mkdir(parents=True, exist_ok=True)
+    def prepare(self):
+        config = configparser.ConfigParser()
+        config.read(".\config.cfg")
 
-df = pandas.read_csv('Alternatives.csv')
-column = 0
+        filepath = Path(config.get("paths","outputpath") + 'Chains.csv')  
+        filepath.parent.mkdir(parents=True, exist_ok=True)
 
-dataset = {}
-outset = pandas.DataFrame()
+        df = pandas.read_csv(config.get("paths","outputpath") +'Alternatives.csv')
+        column = 0
+        possible = 1
 
-print ("Reading Alternatives Matrix...")
-while True:
-    tech = f'T{column}'
-    tech_conf = f"T{column} confidence"
-    foundset = []
-    if (tech not in df.columns):
-        break
-    outset.insert(loc = column, column=tech, value=None)
+        dataset = {}
+        self.outset = pandas.DataFrame()
 
-    for index, row in df.iterrows():
-        if (not isinstance(row[tech], str)):
-            break
-        #print(f"Row {index}: {row[tech]}, {row[tech_conf]}")
-        foundset.append((row[tech],row[tech_conf]))
+        print ("Reading Alternatives Matrix...")
+        while True:
+            tech = f'T{column}'
+            tech_conf = f"T{column} confidence"
+            foundset = []
+            if (tech not in df.columns):
+                break
+            self.outset.insert(loc = column, column=tech, value=None)
 
-    dataset[column] = foundset
-    print(len(foundset))
+            for index, row in df.iterrows():
+                if (not isinstance(row[tech], str)):
+                    break
+                #print(f"Row {index}: {row[tech]}, {row[tech_conf]}")
+                foundset.append((row[tech],row[tech_conf]))
 
-    column += 1
-outset.insert(loc = column, column="Confidence", value=None)
+            dataset[column] = foundset
+            possible *= len(foundset)
 
-print(outset)
+            column += 1
+        self.outset.insert(loc = column, column="Confidence", value=None)
 
-print ("Done")
+        self.dataset = dataset
+        self.column = column
+        self.filepath = filepath
+        self.config = config
 
-combinations =  list(itertools.product(*dataset.values()))
+        print ("Done")
+        return possible
 
-print(len(combinations))
-print(combinations)
+    def combine(self):
 
-for combination in combinations:
-    print(combination)
-    totalConfidence = 0
-    new_row = []
-    for tech in combination:
-        new_row.append(tech[0])
-        totalConfidence += tech[1]
-    new_row.append(totalConfidence/column)
-    new_df = pandas.DataFrame([new_row], columns=outset.columns)
-    outset = pandas.concat([outset, new_df], ignore_index=True)
+        combinations =  list(itertools.product(*self.dataset.values()))
 
-outset = outset.sort_values(by="Confidence", ascending=False)
+        #print(len(combinations))
+        #print(combinations)
 
-outset.to_csv(filepath, index=False)
-outset.to_html("Chains.html", index=False)
+        for combination in combinations:
+            #print(combination)
+            totalConfidence = 0
+            new_row = []
+            for tech in combination:
+                new_row.append(tech[0])
+                totalConfidence += tech[1]
+            new_row.append(totalConfidence/self.column)
+            new_df = pandas.DataFrame([new_row], columns=self.outset.columns)
+            self.outset = pandas.concat([self.outset, new_df], ignore_index=True)
 
-print(outset.head(10))
+        self.outset = self.outset.sort_values(by="Confidence", ascending=False)
+
+        self.outset.to_csv(self.filepath, index=False)
+        self.outset.to_html(self.config.get("paths","outputpath") + "Chains.html", index=False)
+
+        print(f"Showing top {int(self.config.get('other', 'chainPreview', fallback=0))} results")
+        print(self.outset.head(int(self.config.get("other", "chainPreview"))))
